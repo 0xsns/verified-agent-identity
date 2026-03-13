@@ -1,0 +1,55 @@
+name: Verify Human Identity
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22" # atau "lts/*"
+
+      - name: Install ClawHub
+        run: npm install -g clawhub
+
+      - name: Install Verified Agent Identity
+        run: clawhub install verified-agent-identity
+
+      - name: Install zk-SNARK dependencies
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          source $HOME/.cargo/env
+          cargo install circom@2.1.8
+          npm install -g snarkjs@0.7.4
+
+      - name: Initialize circuits (if supported)
+        run: clawhub circuits init || echo "Circuits init not available"
+
+      - name: Download required circuits (if supported)
+        run: clawhub circuits download --all || echo "No circuits to download"
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm install
+
+      - name: Create Ethereum Identity
+        run: node scripts/createNewEthereumIdentity.js
+
+      - name: Link Human to Agent (with debug logging)
+        env:
+          DEBUG: "*"
+          NODE_DEBUG: "clawhub,zk,circuit"
+        run: |
+          echo "=== Starting manual link ==="
+          ls -la ./scripts/
+          ls -la ./circuits/ 2>/dev/null || echo "No circuits folder"
+          node scripts/manualLinkHumanToAgent.js --challenge '{"name":"0xsns","description":"0xsns AI Agent"}'
+          
