@@ -1,0 +1,38 @@
+name: Verify Human Identity
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opsional: paksa pakai Node.js 24 sekarang
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"  # Bisa tetap 20 atau upgrade ke 22/24 jika scriptmu kompatibel
+
+      - name: Install ClawHub
+        run: npm install -g clawhub
+
+      - name: Install Verified Agent Identity
+        run: clawhub install verified-agent-identity
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm install
+
+      - name: Create Ethereum Identity
+        run: node scripts/createNewEthereumIdentity.js
+
+      - name: Link Human to Agent
+        run: |
+          node scripts/manualLinkHumanToAgent.js --challenge '{"name":"0xsns","description":"0xsns AI Agent"}'
+          
