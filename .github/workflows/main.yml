@@ -34,5 +34,6 @@ jobs:
 
       - name: Link Human to Agent
         run: |
-          node scripts/manualLinkHumanToAgent.js --challenge '{"name":"0xsns","description":"0xsns AI Agent"}'
-          
+          node scripts/manualLinkHumanToAgent.js --challenge '{"name":"0xsns","description":"0xsns AI Agent"}
+          npx clawhub@latest install verified-agent-identity'
+          npx clawhub@latest list
